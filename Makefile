@@ -3,7 +3,6 @@
 clean-pyc:
 	find . -name '*.pyc' -exec rm --force {} +
 	find . -name '*.pyo' -exec rm --force {} +
-	name '*~' -exec rm --force  {} 
 
 clean-build:
 	rm -rf data/
@@ -13,7 +12,10 @@ clean-build:
 	rm -rf __pycache__/
 	rm -rf *.egg-info
 
-build: clean-build
+tests:
+	python -m pytest tests/
+
+build: clean-build test
 	python timegeopack.py
 	sh data-dist.sh
 	
@@ -24,7 +26,7 @@ lint:
 	#pylint *.py
 
 test: clean-pyc
-	py.test --verbose --color=yes $(TEST_PATH)
+	python -m pytest --verbose --color=yes $(TEST_PATH)
 
 run:
 	python timegeopack.py $1
