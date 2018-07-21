@@ -80,6 +80,7 @@ def _record(needle, haystack, row):
 
 
 def build():
+    os.makedirs(dataPath(), exist_ok=True)
     global db
     db = tgp.db()
 
