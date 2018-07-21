@@ -6,7 +6,8 @@ clean-pyc:
 	name '*~' -exec rm --force  {} 
 
 clean-build:
-
+	rm -rf data/
+	rm -rf log/
 	rm -rf build/
 	rm -rf dist/
 	rm -rf __pycache__/
