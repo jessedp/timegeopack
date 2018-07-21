@@ -1,17 +1,18 @@
-def offsetToSec(str):
+def offsetToSec(offset):
+    offset = str(offset)
     neg = False
     time = ""
-    if (str.startswith('-') or str.startswith('+')):
-        time = str[1:]
-        if str.startswith('-'):
+    if (offset.startswith('-') or offset.startswith('+')):
+        time = offset[1:]
+        if offset.startswith('-'):
             neg = True
     else:
-        time = str
+        time = offset
 
     parts = time.split(':')
     if len(parts) == 1:
         parts.append(0)
-    secs = int(parts[0]) * 3600 + int(parts[1])
+    secs = int(parts[0]) * 3600 + int(parts[1]) * 60
     if (neg):
         secs = secs * -1
 
