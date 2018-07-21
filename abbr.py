@@ -77,15 +77,15 @@ def process():
     elif abbr_type == 'TT':
         rows_sel = "table.infotable > tr"
         html_file = dataPath() + 'tt_abbreviations.html'
-        if (not os.path.isfile(html_file)):
-            resp = get('https://www.timetemperature.com/abbreviations/world_time_zone_abbreviations.shtml',
-                       headers={'Accept-Encoding': 'utf-8'})
-            raw_html = resp.text
-            f = open(html_file, 'w')
-            f.write(raw_html)
-            f.close()
-        else:
-            raw_html = open(html_file).read()
+        #if (not os.path.isfile(html_file)):
+        resp = get('https://www.timetemperature.com/abbreviations/world_time_zone_abbreviations.shtml',
+                   headers={'Accept-Encoding': 'utf-8'})
+        raw_html = resp.text
+        f = open(html_file, 'w')
+        f.write(raw_html)
+        f.close()
+        #else:
+        #    raw_html = open(html_file).read()
     else:
         log.exception("UNKNOWN abbr_type [" + abbr_type + "], exiting...")
         exit(-1)
@@ -104,17 +104,23 @@ def process():
                 # this is not going to work
                 off = cols[2]
             elif abbr_type == 'TT':
-                parts = cols[2].split(' ')
-                if len(parts) != 3:
-                    log.debug("Skipping abbr: " + cols[2])
-                    continue
+                try:
+                    parts = cols[2].split(' ')
+                    if len(parts) != 3:
+                        log.debug("Skipping abbr: " + cols[2])
+                        continue
 
-                sign = parts[1]
-                tpars = parts[2].split(':')
-                if (len(tpars) == 1):
-                    off = sign + parts[2] + ':00'
-                else:
-                    off = sign + parts[2]
+                    sign = parts[1]
+                    tpars = parts[2].split(':')
+                    if (len(tpars) == 1):
+                        off = sign + parts[2] + ':00'
+                    else:
+                        off = sign + parts[2]
+                except IndexError as e:
+                    log.info('cols:' + str(cols))
+                    log.info('parts:' + str(parts))
+                    log.exception(e)
+                    exit(-1)
 
             orig = cols[1].title()
             pieces = orig.split('(', 2)
