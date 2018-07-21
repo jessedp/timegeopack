@@ -1,5 +1,6 @@
 language: python
-sudo: true
+sudo: false
+dist: trusty
 
 python:
   - 3.6
