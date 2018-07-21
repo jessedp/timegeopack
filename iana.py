@@ -5,6 +5,7 @@ import tempfile
 import tarfile
 import sqlite3
 import urllib.request
+import urllib.error
 import tz2js
 import logging
 
@@ -79,9 +80,14 @@ def parseMakefile(str):
 def stageFiles():
     os.makedirs(dataPath(), exist_ok=True)
 
-    with urllib.request.urlopen('ftp://ftp.iana.org/tz/data/version') as resp:
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            shutil.copyfileobj(resp, tmp_file)
+    try:
+        with urllib.request.urlopen('ftp://ftp.iana.org/tz/data/version') as resp:
+            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                shutil.copyfileobj(resp, tmp_file)
+    except urllib.error.URLError as e:
+        log.error('Unable to download version')
+        log.exception(e)
+        exit(-3)
 
     pub_ver = open(tmp_file.name).read().strip()
     os.unlink(tmp_file.name)
@@ -98,20 +104,26 @@ def stageFiles():
         log.info('Data up to date, carrying on.')
     else:
         log.info('Out of date, need to retrive current files')
+        try:
+            with urllib.request.urlopen('ftp://ftp.iana.org/tz/tzdata-latest.tar.gz') as resp:
+                with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                    shutil.copyfileobj(resp, tmp_file)
 
-        with urllib.request.urlopen('ftp://ftp.iana.org/tz/tzdata-latest.tar.gz') as resp:
-            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-                shutil.copyfileobj(resp, tmp_file)
+                    tar = tarfile.open(tmp_file.name, "r:gz")
+                    tar.extractall(dataPath())
 
-                tar = tarfile.open(tmp_file.name, "r:gz")
-                tar.extractall(dataPath())
+                    for member in tar.getmembers():
+                        log.info(
+                            "file: {} - {} bytes - {}".format(member.name, member.size, member.mtime))
 
-                for member in tar.getmembers():
-                    log.info(
-                        "file: {} - {} bytes - {}".format(member.name, member.size, member.mtime))
+                    log.info('Retrieved and extracted current current data archive')
+            os.unlink(tmp_file.name)
+        except urllib.error.URLError as e:
+            log.error('Unable to download latest tzdata')
+            log.exception(e)
+            exit(-3)
 
-                log.info('Retrieved and extracted current current data archive')
-        os.unlink(tmp_file.name)
+
 
 
 def processTzData():
