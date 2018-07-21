@@ -92,7 +92,7 @@ def process():
 
     log.info('Retrieved ' + abbr_type + ' source data')
 
-    html = BeautifulSoup(raw_html, 'lxml')
+    html = BeautifulSoup(raw_html, 'html.parser')
     data = []
     off = ''
     # TODO: those 2 urls/providers happen to have the same row order... more/different cleanup for wikipedia likely required.
