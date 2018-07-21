@@ -15,9 +15,8 @@ clean-build:
 
 build: clean-build
 	python timegeopack.py
-	zip data/timegeopack.sqlite3.zip data/timegeopack.sqlite3
-	zip data/cities/topcities.zip data/cities/*
-
+	sh data-dist.sh
+	
 lint:
 	autopep8 -i *.py
 	flake8 --ignore=E501 --exclude=.tox *.py
@@ -28,4 +27,4 @@ test: clean-pyc
 	py.test --verbose --color=yes $(TEST_PATH)
 
 run:
-	/usr/bin/python3.6 timegeopack.py $1
+	python timegeopack.py $1
