@@ -13,9 +13,9 @@ clean-build:
 	rm -rf *.egg-info
 
 build: clean-build
-	/usr/bin/python3.6 timegeopack.py
-	/usr/bin/zip data/timegeopack.sqlite3.zip data/timegeopack.sqlite3
-	/usr/bin/zip data/cities/topcities.zip data/cities/*
+	python timegeopack.py
+	zip data/timegeopack.sqlite3.zip data/timegeopack.sqlite3
+	zip data/cities/topcities.zip data/cities/*
 
 lint:
 	autopep8 -i *.py
