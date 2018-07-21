@@ -38,8 +38,7 @@ def insertRows(data):
                 zone = rec.getArea() + '/' + x
             try:
                 cur.execute("INSERT INTO timezones (timezone, offset, offset_sec) VALUES (?, ?, ?)",
-                            (zone, rec.getGMTOffset(),
-                             util.secToOffset(rec.getGMTOffset()))
+                            (zone, util.secToOffset(rec.getGMTOffset()), rec.getGMTOffset())
                             )
                 i = i + 1
             except sqlite3.IntegrityError as e:
