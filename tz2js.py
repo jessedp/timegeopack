@@ -34,7 +34,6 @@ import datetime
 import logging
 
 # level=log.debug ) # Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-# logging.basicConfig(level=log.debug)
 logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger()
 tzpath = ''  # os.path.join(sys.argv[1])
@@ -373,7 +372,6 @@ class TimeZone(TimeZoneBase):
 
         # TODO: Implement parsing for the year_until
         if len(tmp) >= 2 and isinstance(tmp[1], str):
-                # type(tmp[1]) == type(""):
             tmp[1] = months.index(tmp[1]) + 1
 
         for x, i in enumerate(tmp):
