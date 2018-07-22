@@ -70,7 +70,7 @@ def fetchData():
     log.info('Fetching abbreviation type: ' + source)
     html_file = dataPath() + providers[source]['filename']
     if (not os.path.isfile(html_file)):
-        resp = get(providers['source']['url'],
+        resp = get(providers[source]['url'],
                    headers={'Accept-Encoding': 'utf-8'})
         raw_html = resp.text
         f = open(html_file, 'w')
