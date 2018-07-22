@@ -10,14 +10,19 @@ Nothing here is intended to assist with date/time calculations because **that**
 would be **super** redundant.
 
 
-Run the script as:
+Run the script:
 ```angular2html
 # python3 timegeopack.py
 ```
-
+and it will:
 * download the most recent versions of the supported data soures (below) 
 * parse/process the data and stick it into a sqlite3 database
 * run a sample script to generate a custom data set
+
+Alternately! Everything mentioned here is available zipped up in the [current release](https://github.com/jessedp/timegeopack/releases/latest) including:
+* the generated sqlite db
+* the sample top cities (by timezone and cat'd together ... plus some summary)
+
 
 #### requirements
 * python 3 (developed using 3.6.5)
