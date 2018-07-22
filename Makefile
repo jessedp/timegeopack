@@ -12,9 +12,6 @@ clean-build:
 	rm -rf __pycache__/
 	rm -rf *.egg-info
 
-tests:
-	python -m pytest tests/
-
 build: clean-build test
 	python timegeopack.py
 	sh data-dist.sh
