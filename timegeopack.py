@@ -77,7 +77,6 @@ if __name__ == '__main__':
     abbr.process()
     log.info("~" * 40)
 
-    exit(0)
     iana.process()
     log.info("~" * 40)
     
