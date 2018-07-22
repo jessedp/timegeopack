@@ -11,7 +11,7 @@ from util import offsetToSec
 DEBUG = False
 # TT = timetemperature.com
 # WIKI = wikiepedia page - has extra info stuff that has to be stripped out :/
-abbr_type = "TT"
+source = "TT"
 log = logging.getLogger(__name__)
 
 
@@ -55,72 +55,85 @@ def insertRows(data):
     log.info('Added {:d} records'.format(i))
 
 
-def process():
-    raw_html = ''
-    rows_sel = ''
-    os.makedirs(dataPath(), exist_ok=True)
+providers = {
+    'TT': {
+        'url': 'https://www.timetemperature.com/abbreviations/world_time_zone_abbreviations.shtml',
+        'filename': 'tt_abbreviations.html'
+    },
+    'WP': {
+        'url': 'https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations',
+        'filename': 'wiki_abbreviations.html'
+    }
+}
 
-    log.info('Running abbreviation type: ' + abbr_type)
-
-    if abbr_type == 'WIKI':
-        rows_sel = "table.wikitable > tr"
-        html_file = dataPath() + 'wiki_abbreviations.html'
-        if (not os.path.isfile(html_file)):
-            resp = get('https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations',
-                       headers={'Accept-Encoding': 'utf-8'})
-            raw_html = resp.text
-            f = open(html_file, 'w')
-            f.write(raw_html)
-            f.close()
-        else:
-            raw_html = open(html_file).read()
-    elif abbr_type == 'TT':
-        rows_sel = "table.infotable > tr"
-        html_file = dataPath() + 'tt_abbreviations.html'
-        #if (not os.path.isfile(html_file)):
-        resp = get('https://www.timetemperature.com/abbreviations/world_time_zone_abbreviations.shtml',
+def fetchData():
+    log.info('Fetching abbreviation type: ' + source)
+    html_file = dataPath() + providers[source]['filename']
+    if (not os.path.isfile(html_file)):
+        resp = get(providers['source']['url'],
                    headers={'Accept-Encoding': 'utf-8'})
         raw_html = resp.text
         f = open(html_file, 'w')
         f.write(raw_html)
         f.close()
-        #else:
-        #    raw_html = open(html_file).read()
     else:
-        log.exception("UNKNOWN abbr_type [" + abbr_type + "], exiting...")
+        raw_html = open(html_file).read()
+
+    return raw_html
+
+
+def process(data_src='TT'):
+    os.makedirs(dataPath(), exist_ok=True)
+
+    global source
+    if not data_src:
+        source = data_src
+
+    if source not in providers:
+        log.exception("UNKNOWN source [" + source + "], exiting...")
         exit(-1)
 
-    log.info('Retrieved ' + abbr_type + ' source data')
+    html = fetchData()
+    log.info('Retrieved ' + source + ' source data')
+    data = []
+    if source == 'TT':
+        data = parseTT(html)
+    elif source == 'WP':
+        data = parseWP(html)
 
-    html = BeautifulSoup(raw_html, 'html.parser')
+    if log.isEnabledFor(logging.DEBUG):
+        for x in data:
+            log.debug("\t{}".format(x))
+    insertRows(data)
+
+
+def parseTT(html):
+    html = BeautifulSoup(html, 'html.parser')
     data = []
     off = ''
-    # TODO: those 2 urls/providers happen to have the same row order... more/different cleanup for wikipedia likely required.
+    rows_sel = "table.infotable > tr"
     for i, row in enumerate(html.select(rows_sel)):
         if i > 0:  # skip the header row
+            parts = []
             cols = row.find_all('td')
             cols = [el.text.strip() for el in cols]
-            if abbr_type == 'WIKI':
-                # this is not going to work
-                off = cols[2]
-            elif abbr_type == 'TT':
-                try:
-                    parts = cols[2].split(' ')
-                    if len(parts) != 3:
-                        log.debug("Skipping abbr: " + cols[2])
-                        continue
+            try:
+                parts = cols[2].split(' ')
+                if len(parts) != 3:
+                    log.debug("Skipping abbr: " + cols[2])
+                    continue
 
-                    sign = parts[1]
-                    tpars = parts[2].split(':')
-                    if (len(tpars) == 1):
-                        off = sign + parts[2] + ':00'
-                    else:
-                        off = sign + parts[2]
-                except IndexError as e:
-                    log.info('cols:' + str(cols))
-                    log.info('parts:' + str(parts))
-                    log.exception(e)
-                    exit(-1)
+                sign = parts[1]
+                tpars = parts[2].split(':')
+                if (len(tpars) == 1):
+                    off = sign + parts[2] + ':00'
+                else:
+                    off = sign + parts[2]
+            except IndexError as e:
+                log.info('cols:' + str(cols))
+                log.info('parts:' + str(parts))
+                log.exception(e)
+                exit(-1)
 
             orig = cols[1].title()
             pieces = orig.split('(', 2)
@@ -132,8 +145,25 @@ def process():
 
             data.append({'abbr': cols[0], 'desc': desc, 'desc_extra': desc_extra,
                          'offset': off, 'offset_sec': offsetToSec(off)})
-    if log.isEnabledFor(logging.DEBUG):
-        for x in data:
-            log.debug("\t{}".format(x))
+    return data
 
-    insertRows(data)
+
+def parseWP(html):
+    log.critical('NOT FULLY IMPLEMENTED')
+    html = BeautifulSoup(html, 'html.parser')
+    data = []
+    off = ''
+    rows_sel = "table.wikitable > tr"
+    # TODO: parsing columns needs to actually be done...
+    for i, row in enumerate(html.select(rows_sel)):
+        if i > 0:  # skip the header row
+            cols = row.find_all('td')
+            cols = [el.text.strip() for el in cols]
+            # this is not going to work well
+            off = cols[2]
+
+
+            #data.append({'abbr': cols[0], 'desc': desc, 'desc_extra': desc_extra,
+            #             'offset': off, 'offset_sec': offsetToSec(off)})
+    
+    return data
