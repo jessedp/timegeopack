@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jessedp/timegeopack.svg?branch=master)](https://travis-ci.org/jessedp/timegeopack)
+
 ### TimeGeoPack
 Semi-automatically gather public geographic and time-related data together 
 to provide a quick start for mashing up various combinations of the data 
